@@ -1,0 +1,2 @@
+# Windows only. Bundles LibreHardwareMonitorLib (needs pythonnet).
+HardwareMonitor>=1.2; sys_platform == "win32"
