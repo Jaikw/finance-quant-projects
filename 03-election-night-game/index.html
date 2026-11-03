@@ -6,92 +6,112 @@
 <title>Election Night Upset Tracker</title>
 <style>
   :root {
-    --bg: #f6f5f2;
-    --card: #ffffff;
-    --ink: #1d1d1f;
-    --muted: #6b6b70;
-    --line: #e2e0da;
-    --d: #2f5bb7;
-    --r: #c23b3b;
-    --accent: #b8860b;
-    --ok: #2e7d4f;
+    --bg: #f6f5f2; --card: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --line: #e2e0da;
+    --d: #2f5bb7; --r: #c23b3b; --accent: #b8860b; --ok: #2e7d4f; --warn: #a15c00;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #141416; --card: #1f1f23; --ink: #ececef; --muted: #9a9aa2; --line: #303036;
-      --d: #6f95e6; --r: #e46a6a; --accent: #e0b04a; --ok: #5fbf8a;
+      --d: #6f95e6; --r: #e46a6a; --accent: #e0b04a; --ok: #5fbf8a; --warn: #e8a85a;
     }
   }
   :root[data-theme="dark"] {
     --bg: #141416; --card: #1f1f23; --ink: #ececef; --muted: #9a9aa2; --line: #303036;
-    --d: #6f95e6; --r: #e46a6a; --accent: #e0b04a; --ok: #5fbf8a;
+    --d: #6f95e6; --r: #e46a6a; --accent: #e0b04a; --ok: #5fbf8a; --warn: #e8a85a;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-  main { max-width: 720px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
   h1 { font-size: 22px; margin: 4px 0 2px; }
-  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 8px; }
-  .sub { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
-  .tally { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 24px 0 8px; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
+  .tally { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
   .stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: center; }
-  .stat .n { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .stat .l { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
-  .btn {
-    appearance: none; border: 1px solid var(--line); background: var(--card); color: var(--ink);
-    border-radius: 10px; padding: 10px 14px; font: inherit; cursor: pointer;
-  }
+  .stat .n { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat .l { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .btn { appearance: none; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 10px; padding: 9px 13px; font: inherit; cursor: pointer; }
   .btn:active { transform: translateY(1px); }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: #111; font-weight: 600; }
-  .btn.small { padding: 6px 10px; font-size: 13px; }
-  .btn.d { color: var(--d); }
-  .btn.r { color: var(--r); }
+  .btn.small { padding: 5px 9px; font-size: 13px; }
+  .btn.d { color: var(--d); } .btn.r { color: var(--r); }
   .btn.on-d { background: var(--d); border-color: var(--d); color: #fff; }
   .btn.on-r { background: var(--r); border-color: var(--r); color: #fff; }
-  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .race {
-    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-    padding: 12px; margin-bottom: 8px;
-  }
-  .race-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-  .race-name { font-weight: 600; }
-  .odds { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .bar { height: 6px; border-radius: 3px; background: var(--r); overflow: hidden; margin: 8px 0; }
+  .btn.ghost { border-style: dashed; }
+  input.odds { width: 64px; font: inherit; padding: 5px 6px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--bg); color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .spacer { flex: 1; }
+  .group-title { font-size: 12px; font-weight: 700; color: var(--muted); margin: 16px 0 6px; text-transform: uppercase; letter-spacing: .05em; }
+  .race { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 8px; }
+  .matchup { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+  .race-name { font-weight: 700; font-size: 15px; }
+  .cands { font-size: 13px; color: var(--muted); }
+  .cands b.d { color: var(--d); } .cands b.r { color: var(--r); }
+  .tag { font-size: 10px; border: 1px solid var(--warn); color: var(--warn); border-radius: 6px; padding: 0 5px; margin-left: 4px; vertical-align: middle; }
+  .price { font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; }
+  .price .big { font-size: 20px; font-weight: 700; }
+  .bar { height: 7px; border-radius: 4px; background: var(--r); overflow: hidden; margin: 8px 0 6px; }
   .bar > span { display: block; height: 100%; background: var(--d); }
+  .spark { width: 100%; height: 44px; display: block; }
+  .move { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .move.up { color: var(--d); } .move.down { color: var(--r); }
   .result { font-size: 13px; margin-top: 6px; min-height: 18px; }
-  .result.upset { color: var(--accent); font-weight: 600; }
+  .result.upset { color: var(--accent); font-weight: 700; }
   .result.chalk { color: var(--ok); }
-  .card-box {
-    background: var(--card); border: 1px dashed var(--accent); border-radius: 12px;
-    padding: 14px; text-align: center;
-  }
-  .card-text { font-size: 17px; margin: 8px 0 12px; min-height: 48px; }
-  .card-hit { font-size: 13px; color: var(--muted); }
-  .log { font-size: 13px; color: var(--muted); max-height: 200px; overflow: auto; padding-left: 18px; margin: 6px 0; }
-  .note {
-    font-size: 12px; color: var(--muted); border-top: 1px solid var(--line);
-    margin-top: 22px; padding-top: 12px;
-  }
-  .toolbar { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  .card-box { background: var(--card); border: 1px dashed var(--accent); border-radius: 12px; padding: 14px; text-align: center; }
+  .card-text { font-size: 17px; margin: 8px 0 10px; min-height: 48px; }
+  .hint { font-size: 13px; color: var(--muted); }
+  .log { font-size: 13px; color: var(--muted); max-height: 220px; overflow: auto; padding-left: 18px; margin: 6px 0; }
+  .note { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 24px; padding-top: 12px; }
   a { color: var(--d); }
+  details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+  .grid-odds { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; margin-top: 8px; }
+  .grid-odds label { font-size: 14px; }
+  .chart-wrap { margin-top: 4px; }
+  .legend { font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 10px; height: 3px; vertical-align: middle; margin-right: 4px; }
 </style>
 </head>
 <body>
 <main>
   <h1>Election Night Upset Tracker</h1>
-  <p class="sub">Every race is priced by Polymarket. Favorites winning is chalk (no drinks). Underdogs winning costs the table sips, scaled by how unlikely the result was.</p>
+  <p class="sub">Each race is priced from Polymarket. Log the odds as you check them, call races as they come in, and every underdog win costs the table sips scaled to how unlikely it was.</p>
 
   <div class="tally">
     <div class="stat"><div class="n" id="sips">0</div><div class="l">Sips owed</div></div>
-    <div class="stat"><div class="n" id="smokes">0</div><div class="l">Smoke breaks owed</div></div>
+    <div class="stat"><div class="n" id="smokes">0</div><div class="l">Smoke breaks</div></div>
+    <div class="stat"><div class="n" id="called">0/0</div><div class="l">Races called</div></div>
   </div>
 
-  <h2>Upset math</h2>
-  <div class="card-box" style="text-align:left">
-    <div>Sips = round((1 − favorite's probability) × 20), minimum 1 when the underdog wins.</div>
-    <div class="card-hit">Example: a 71% favorite loses → round(0.29 × 20) = 6 sips. A 95% favorite loses → 1 sip. A 52% favorite loses → 10 sips.</div>
+  <h2>Senate control · last 12 hours</h2>
+  <div class="panel">
+    <div class="row">
+      <div class="price"><span class="big" id="ctlD">—</span> D &nbsp; <span id="ctlR" class="hint">—</span></div>
+      <div class="spacer"></div>
+      <div class="move" id="ctlMove"></div>
+    </div>
+    <div class="chart-wrap" id="ctlChart"></div>
+    <div class="legend"><span><i style="background:var(--d)"></i>Democratic Senate control</span><span id="snapCount"></span></div>
+  </div>
+
+  <h2>Odds snapshot</h2>
+  <div class="panel">
+    <div class="row">
+      <div class="hint">Check Polymarket, type each Democratic price (0–100), then save. Each save adds a timestamped point to every race's history.</div>
+    </div>
+    <details open>
+      <summary>Enter current prices</summary>
+      <div class="grid-odds" id="oddsForm"></div>
+    </details>
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" id="saveSnap">Save snapshot</button>
+      <button class="btn small ghost" id="fillLast">Fill with last snapshot</button>
+      <div class="spacer"></div>
+      <span class="hint" id="lastSnapText"></span>
+    </div>
   </div>
 
   <h2>Race board</h2>
@@ -99,55 +119,84 @@
 
   <h2>Event card</h2>
   <div class="card-box">
-    <div class="card-hit" id="cardCount">Draw a card when the mood needs it.</div>
+    <div class="hint" id="cardCount">Draw a card when the mood needs it.</div>
     <div class="card-text" id="cardText">—</div>
-    <div class="card-hit" id="cardHit"></div>
+    <div class="hint" id="cardHit"></div>
     <div style="margin-top:10px"><button class="btn primary" id="drawBtn">Draw card</button></div>
   </div>
 
   <h2>Log</h2>
   <ol class="log" id="log"></ol>
-
-  <div class="toolbar">
-    <button class="btn small" id="undoBtn">Undo last call</button>
+  <div class="row">
+    <button class="btn small" id="undoBtn">Undo last</button>
+    <div class="spacer"></div>
     <button class="btn small" id="resetBtn">Reset night</button>
   </div>
 
   <div class="note">
-    <p><strong>Odds source:</strong> Polymarket probabilities are snapshots taken from third-party pages on election day, not live feeds. Senate and governor numbers came from different snapshots and do not all agree. Pennsylvania governor has no price in the data, so it is left out. Update the <code>RACES</code> array in this file to refresh them.</p>
-    <p><strong>Sources:</strong> <a href="https://polymarket.us/midterms/key-races">Polymarket US, key races</a> · <a href="https://polymarket.us/event/usse-midterms-2026-11-03">Polymarket US, Senate winner</a> · <a href="https://polymarket.us/event/usgub-oh-2026-11-03">Polymarket US, Ohio governor</a> · <a href="https://www.realclearpolling.com/maps/governor/2026/polymarket">RealClearPolling, governor map</a> · <a href="https://cedarnews.net/newstasks/1118424/gina-hinojosas-texas-governor-election-odds-rise-to-34-on-polymarket/">Cedar News, Texas governor</a></p>
-    <p><strong>Drink responsibly.</strong> Every sip can be water, soda, or nothing. Nobody should be drinking to keep up, and nobody should drive home from this. Smoke breaks are optional and can be skipped for any reason, including a non-smoker's "I'll take a lap instead."</p>
+    <p><strong>Odds:</strong> No live Polymarket feed is connected. Starting prices are election-day snapshots from news and aggregator pages (see sources below), and the 12-hour history only fills in from snapshots you save here. The chart stays empty until you save the first one.</p>
+    <p><strong>Names:</strong> Entries tagged <span class="tag">verify</span> were not confirmed in my sources. Check them against the state's official ballot before the night.</p>
+    <p><strong>Sources:</strong>
+      <a href="https://polymarket.us/midterms/key-races">Polymarket US, key races</a> ·
+      <a href="https://polymarket.us/event/usse-midterms-2026-11-03">Polymarket US, Senate winner</a> ·
+      <a href="https://www.realclearpolling.com/maps/governor/2026/polymarket">RealClearPolling, governor map</a> ·
+      <a href="https://cedarnews.net/newstasks/1118424/gina-hinojosas-texas-governor-election-odds-rise-to-34-on-polymarket/">Cedar News, Texas governor</a> ·
+      <a href="https://en.wikipedia.org/wiki/2026_United_States_Senate_election_in_Texas">Wikipedia, Texas Senate</a> ·
+      <a href="https://en.wikipedia.org/wiki/2026_United_States_Senate_election_in_Iowa">Wikipedia, Iowa Senate</a> ·
+      <a href="https://en.wikipedia.org/wiki/2026_United_States_Senate_election_in_Michigan">Wikipedia, Michigan Senate</a> ·
+      <a href="https://www.cnbc.com/2026/11/02/prediction-market-traders-now-see-nearly-75percent-chance-of-democrats-winning-the-senate.html">CNBC, Senate control odds</a>
+    </p>
+    <p><strong>Drink responsibly.</strong> Every sip can be water, soda, or nothing. Nobody should be drinking to keep up, and nobody should drive home from this. Smoke breaks are optional.</p>
   </div>
 </main>
 
 <script>
 (function () {
-  // Democratic win probability per race, from Polymarket snapshots (election day, 2026-11-03).
-  // Edit these to refresh. pD = probability Democrat wins.
+  // ---------- Data ----------
+  // pD = Democratic win probability (0–1) from election-day snapshots. verified = candidate names confirmed in sources.
   var RACES = [
-    { id: "ctl",  group: "Control",  name: "Senate control (majority)", pD: 0.77 },
-    { id: "s-tx", group: "Senate",   name: "Texas",                     pD: 0.74 },
-    { id: "s-ia", group: "Senate",   name: "Iowa",                      pD: 0.52 },
-    { id: "s-oh", group: "Senate",   name: "Ohio",                      pD: 0.71 },
-    { id: "s-mi", group: "Senate",   name: "Michigan",                  pD: 0.79 },
-    { id: "s-me", group: "Senate",   name: "Maine",                     pD: 0.73 },
-    { id: "s-ak", group: "Senate",   name: "Alaska",                    pD: 0.71 },
-    { id: "s-ga", group: "Senate",   name: "Georgia",                   pD: 0.97 },
-    { id: "s-nc", group: "Senate",   name: "North Carolina",            pD: 0.98 },
-    { id: "s-nh", group: "Senate",   name: "New Hampshire",             pD: 0.95 },
-    { id: "s-ks", group: "Senate",   name: "Kansas",                    pD: 0.63 },
-    { id: "g-ga", group: "Governor", name: "Georgia",                   pD: 0.71 },
-    { id: "g-az", group: "Governor", name: "Arizona",                   pD: 0.93 },
-    { id: "g-wi", group: "Governor", name: "Wisconsin",                 pD: 0.86 },
-    { id: "g-mi", group: "Governor", name: "Michigan",                  pD: 0.95 },
-    { id: "g-nv", group: "Governor", name: "Nevada",                    pD: 0.75 },
-    { id: "g-tx", group: "Governor", name: "Texas",                     pD: 0.34 }
+    { id: "ctl", group: "Chamber control", title: "Senate control (majority)", pD: 0.77, verified: true,
+      d: "Democrats", r: "Republicans" },
+
+    { id: "s-tx", group: "Senate", title: "Texas", pD: 0.74, verified: true,
+      d: "James Talarico", r: "Ken Paxton" },
+    { id: "s-ia", group: "Senate", title: "Iowa", pD: 0.52, verified: true,
+      d: "Josh Turek", r: "Ashley Hinson" },
+    { id: "s-mi", group: "Senate", title: "Michigan", pD: 0.79, verified: false,
+      d: "Abdul El-Sayed", r: "R nominee" },
+    { id: "s-oh", group: "Senate", title: "Ohio (special)", pD: 0.71, verified: false,
+      d: "Sherrod Brown", r: "Jon Husted" },
+    { id: "s-me", group: "Senate", title: "Maine", pD: 0.73, verified: false,
+      d: "D nominee", r: "Susan Collins" },
+    { id: "s-ak", group: "Senate", title: "Alaska", pD: 0.71, verified: false,
+      d: "D nominee", r: "R nominee" },
+    { id: "s-ga", group: "Senate", title: "Georgia", pD: 0.97, verified: false,
+      d: "Jon Ossoff", r: "R nominee" },
+    { id: "s-nc", group: "Senate", title: "North Carolina", pD: 0.98, verified: false,
+      d: "Roy Cooper", r: "Michael Whatley" },
+    { id: "s-nh", group: "Senate", title: "New Hampshire", pD: 0.95, verified: false,
+      d: "Chris Pappas", r: "R nominee" },
+    { id: "s-ks", group: "Senate", title: "Kansas", pD: 0.63, verified: false,
+      d: "D nominee", r: "R nominee" },
+
+    { id: "g-ga", group: "Governor", title: "Georgia", pD: 0.71, verified: true,
+      d: "Keisha Lance Bottoms", r: "Rick Jackson" },
+    { id: "g-az", group: "Governor", title: "Arizona", pD: 0.93, verified: true,
+      d: "Katie Hobbs", r: "Andy Biggs" },
+    { id: "g-wi", group: "Governor", title: "Wisconsin", pD: 0.86, verified: true,
+      d: "David Crowley", r: "Tom Tiffany" },
+    { id: "g-mi", group: "Governor", title: "Michigan", pD: 0.95, verified: true,
+      d: "Jocelyn Benson", r: "John James" },
+    { id: "g-nv", group: "Governor", title: "Nevada", pD: 0.75, verified: true,
+      d: "Aaron Ford", r: "Joe Lombardo" },
+    { id: "g-tx", group: "Governor", title: "Texas", pD: 0.34, verified: false,
+      d: "Gina Hinojosa", r: "Greg Abbott" }
   ];
 
   var CARDS = [
     { t: "Anchor says “too early to call.” Everyone takes a smoke break.", sips: 0, smokes: 1 },
     { t: "A county nobody has heard of reports first. Sip.", sips: 1, smokes: 0 },
-    { t: "Someone says “the polls were wrong.” Sip for each person who said it before 10 p.m.", sips: 1, smokes: 0 },
+    { t: "Someone says “the polls were wrong.” Sip, and everyone who said it before 10 p.m. sips too.", sips: 1, smokes: 0 },
     { t: "The map is solid red for 30 seconds. Sip.", sips: 2, smokes: 0 },
     { t: "A pundit says “the real story is”. Sip.", sips: 1, smokes: 0 },
     { t: "Someone checks Polymarket on their phone. They drink.", sips: 2, smokes: 0 },
@@ -156,37 +205,132 @@
     { t: "Someone says “recount.” Sip and smoke break.", sips: 1, smokes: 1 },
     { t: "Anyone says “turnout.” Sip.", sips: 1, smokes: 0 },
     { t: "Last person to look at their phone drinks.", sips: 1, smokes: 0 },
-    { t: "Everyone who has voted today sips. Everyone who hasn't takes a smoke break and goes to vote tomorrow.", sips: 1, smokes: 1 }
+    { t: "Everyone who has voted today sips. Everyone who hasn't takes a smoke break and goes to vote tomorrow.", sips: 1, smokes: 1 },
+    { t: "A network projects a winner before the polls close in that state. Two sips.", sips: 2, smokes: 0 },
+    { t: "Someone names the Senate control count from memory. Everyone else sips.", sips: 1, smokes: 0 },
+    { t: "The Polymarket price for a race moves 10+ points in one snapshot. Sip per 5 points moved.", sips: 2, smokes: 0 },
+    { t: "Someone says “it's a blowout” about a race under 55%. Two sips.", sips: 2, smokes: 0 },
+    { t: "A concession call is delayed past midnight. Smoke break for the table.", sips: 0, smokes: 1 },
+    { t: "Everyone who bet on the favorite in any race sips once. Honesty counts.", sips: 1, smokes: 0 }
   ];
 
-  var STORE_KEY = "election-night-upset-tracker-v1";
-  var state = { calls: {}, history: [], cardsDrawn: 0, lastCard: -1 };
+  var STORE_KEY = "election-night-upset-tracker-v2";
+  var WINDOW_MS = 12 * 60 * 60 * 1000;
+  var KEEP_MS = 48 * 60 * 60 * 1000;
 
+  var state = { calls: {}, history: [], snaps: [], cardsDrawn: 0, lastCard: -1, draft: {} };
+
+  // ---------- Storage (try/catch: storage may be blocked) ----------
   function load() {
     try {
       var raw = window.localStorage.getItem(STORE_KEY);
-      if (raw) {
-        var s = JSON.parse(raw);
-        if (s && typeof s === "object") state = Object.assign(state, s);
-      }
-    } catch (e) { /* storage blocked or corrupt: start fresh */ }
+      if (raw) { var s = JSON.parse(raw); if (s && typeof s === "object") state = Object.assign(state, s); }
+    } catch (e) {}
   }
   function save() {
     try { window.localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
   }
 
-  function favoriteOf(r) { return r.pD >= 0.5 ? "D" : "R"; }
-  function pFav(r) { return Math.max(r.pD, 1 - r.pD); }
-  function upsetSips(r, winner) {
-    if (winner === favoriteOf(r)) return 0;
-    return Math.max(1, Math.round((1 - pFav(r)) * 20));
+  // ---------- Helpers ----------
+  function favoriteOf(pD) { return pD >= 0.5 ? "D" : "R"; }
+  function pFav(pD) { return Math.max(pD, 1 - pD); }
+  function upsetSips(pD, winner) {
+    if (winner === favoriteOf(pD)) return 0;
+    return Math.max(1, Math.round((1 - pFav(pD)) * 20));
   }
-  function pct(x) { return Math.round(x * 100) + "%"; }
+  function pct(x) { return Math.round(x * 100); }
+  function currentPD(r) {
+    // Latest saved snapshot wins; falls back to the election-day baseline.
+    var last = state.snaps.length ? state.snaps[state.snaps.length - 1] : null;
+    if (last && last.v && typeof last.v[r.id] === "number") return last.v[r.id];
+    return r.pD;
+  }
+  function seriesFor(id) {
+    var now = Date.now();
+    return state.snaps.filter(function (s) { return now - s.t <= WINDOW_MS && typeof s.v[id] === "number"; })
+      .map(function (s) { return { t: s.t, y: s.v[id] }; });
+  }
+  function fmtTime(t) {
+    var d = new Date(t);
+    return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); }
 
-  function totals() {
-    var sips = 0, smokes = 0;
-    state.history.forEach(function (h) { sips += h.sips || 0; smokes += h.smokes || 0; });
-    return { sips: sips, smokes: smokes };
+  function pruneSnaps() {
+    var cut = Date.now() - KEEP_MS;
+    state.snaps = state.snaps.filter(function (s) { return s.t >= cut; });
+  }
+
+  // Sparkline over the 12-hour window. Y axis fixed 0–100 so moves are comparable.
+  function sparkSvg(id, color, width, height) {
+    var pts = seriesFor(id);
+    var now = Date.now();
+    // Span the full 12 hours once there is that much history; before that, start at the first point
+    // (with a 10-minute margin) so the early line is readable instead of a dot at the edge.
+    var start = pts.length ? Math.max(now - WINDOW_MS, pts[0].t - 10 * 60 * 1000) : now - WINDOW_MS;
+    var span = Math.max(now - start, 60 * 1000);
+    var W = width || 300, H = height || 44, pad = 3;
+    var x = function (t) { return pad + (t - start) / span * (W - 2 * pad); };
+    var y = function (v) { return pad + (1 - v) * (H - 2 * pad); };
+    var mid = "<line x1='0' x2='" + W + "' y1='" + y(0.5) + "' y2='" + y(0.5) + "' stroke='var(--line)' stroke-dasharray='3 3'/>";
+    var body = "";
+    if (pts.length > 1) {
+      var d = pts.map(function (p, i) { return (i ? "L" : "M") + x(p.t).toFixed(1) + " " + y(p.y).toFixed(1); }).join(" ");
+      body += "<path d='" + d + "' fill='none' stroke='" + color + "' stroke-width='2' stroke-linejoin='round' vector-effect='non-scaling-stroke'/>";
+    }
+    pts.forEach(function (p) {
+      body += "<circle cx='" + x(p.t).toFixed(1) + "' cy='" + y(p.y).toFixed(1) + "' r='3' fill='" + color + "' vector-effect='non-scaling-stroke'/>";
+    });
+    // Right-edge label shows the latest value so the chart reads without the table.
+    if (pts.length) {
+      var last = pts[pts.length - 1];
+      body += "<text x='" + (W - pad) + "' y='" + (y(last.y) - 5) + "' text-anchor='end' font-size='10' fill='var(--muted)'>" + pct(last.y) + "%</text>";
+    }
+    return "<svg class='spark' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='none' role='img' aria-label='Odds over last 12 hours'>" +
+      mid + body + "</svg>";
+  }
+
+  function moveText(id) {
+    var pts = seriesFor(id);
+    if (pts.length < 2) return { text: pts.length ? "one snapshot so far" : "no history yet", cls: "" };
+    var first = pts[0].y, last = pts[pts.length - 1].y;
+    var delta = Math.round((last - first) * 100);
+    var arrow = delta > 0 ? "▲" : delta < 0 ? "▼" : "•";
+    return { text: arrow + " " + Math.abs(delta) + " pts in 12h", cls: delta > 0 ? "up" : delta < 0 ? "down" : "" };
+  }
+
+  // ---------- Rendering ----------
+  function renderControl() {
+    var pD = currentPD(RACES[0]);
+    document.getElementById("ctlD").textContent = pct(pD) + "%";
+    document.getElementById("ctlR").textContent = pct(1 - pD) + "% R";
+    var m = moveText("ctl");
+    var el = document.getElementById("ctlMove");
+    el.textContent = m.text; el.className = "move " + m.cls;
+    document.getElementById("ctlChart").innerHTML = sparkSvg("ctl", "var(--d)", 700, 90);
+    document.getElementById("snapCount").textContent = seriesFor("ctl").length + " snapshot(s) in last 12h";
+  }
+
+  function renderOddsForm() {
+    var f = document.getElementById("oddsForm");
+    f.innerHTML = "";
+    RACES.forEach(function (r) {
+      var lab = document.createElement("label");
+      lab.textContent = (r.group === "Chamber control" ? "Senate control" : r.group + " · " + r.title) + " (D %)";
+      var inp = document.createElement("input");
+      inp.type = "number"; inp.min = "0"; inp.max = "100"; inp.step = "1";
+      inp.className = "odds"; inp.id = "in-" + r.id;
+      var v = state.draft[r.id];
+      inp.value = (v !== undefined && v !== null) ? v : pct(currentPD(r));
+      inp.addEventListener("input", function () { state.draft[r.id] = inp.value; });
+      f.appendChild(lab); f.appendChild(inp);
+    });
+  }
+
+  function renderLastSnap() {
+    var t = document.getElementById("lastSnapText");
+    var last = state.snaps[state.snaps.length - 1];
+    t.textContent = last ? "Last saved " + fmtTime(last.t) : "No snapshots yet";
   }
 
   function renderBoard() {
@@ -196,34 +340,30 @@
     RACES.forEach(function (r) {
       if (r.group !== lastGroup) {
         var h = document.createElement("div");
-        h.className = "sub";
-        h.style.marginTop = "12px";
-        h.textContent = r.group === "Control" ? "Chamber control" : r.group + " races";
+        h.className = "group-title";
+        h.textContent = r.group === "Chamber control" ? "Chamber control" : r.group + " races";
         board.appendChild(h);
         lastGroup = r.group;
       }
+      var pD = currentPD(r);
       var call = state.calls[r.id];
       var card = document.createElement("div");
       card.className = "race";
 
-      var head = document.createElement("div");
-      head.className = "race-head";
-      var name = document.createElement("div");
-      name.className = "race-name";
-      name.textContent = r.name;
-      var odds = document.createElement("div");
-      odds.className = "odds";
-      odds.textContent = "Polymarket: D " + pct(r.pD) + " · R " + pct(1 - r.pD);
-      head.appendChild(name); head.appendChild(odds);
-
-      var bar = document.createElement("div");
-      bar.className = "bar";
-      var fill = document.createElement("span");
-      fill.style.width = (r.pD * 100) + "%";
-      bar.appendChild(fill);
+      var tag = r.verified ? "" : "<span class='tag'>verify</span>";
+      var head = "<div class='matchup'>" +
+        "<div><div class='race-name'>" + esc(r.title) + tag + "</div>" +
+        "<div class='cands'><b class='d'>D " + esc(r.d) + "</b> vs <b class='r'>R " + esc(r.r) + "</b></div></div>" +
+        "<div class='price'><span class='big'>" + pct(pD) + "%</span> D · " + pct(1 - pD) + "% R</div>" +
+        "</div>";
+      var bar = "<div class='bar'><span style='width:" + (pD * 100) + "%'></span></div>";
+      var mv = moveText(r.id);
+      var spark = "<div class='move " + mv.cls + "'>" + mv.text + "</div>" + sparkSvg(r.id, "var(--d)", 300, 40);
+      card.innerHTML = head + bar + spark;
 
       var actions = document.createElement("div");
-      actions.className = "row-actions";
+      actions.className = "row";
+      actions.style.marginTop = "8px";
       ["D", "R"].forEach(function (p) {
         var b = document.createElement("button");
         var isOn = call && call.winner === p;
@@ -232,70 +372,100 @@
         b.addEventListener("click", function () { callRace(r.id, p); });
         actions.appendChild(b);
       });
+      card.appendChild(actions);
 
       var result = document.createElement("div");
       result.className = "result";
       if (call) {
         if (call.sips > 0) {
           result.className += " upset";
-          var label = pFav(r) >= 0.9 ? "MEGA UPSET: " : "Upset: ";
-          result.textContent = label + call.sips + " sip" + (call.sips === 1 ? "" : "s") + " (" + (call.winner === "D" ? "R" : "D") + " favorite lost)";
+          var label = pFav(call.pD) >= 0.9 ? "MEGA UPSET: " : "Upset: ";
+          result.textContent = label + call.sips + " sip" + (call.sips === 1 ? "" : "s") +
+            " (" + (call.winner === "D" ? "R" : "D") + " favorite lost at " + pct(pFav(call.pD)) + "%)";
         } else {
           result.className += " chalk";
           result.textContent = "Chalk. Favorite won, no drinks.";
         }
       }
-
-      card.appendChild(head);
-      card.appendChild(bar);
-      card.appendChild(actions);
       card.appendChild(result);
       board.appendChild(card);
     });
   }
 
   function renderTotals() {
-    var t = totals();
-    document.getElementById("sips").textContent = t.sips;
-    document.getElementById("smokes").textContent = t.smokes;
+    var sips = 0, smokes = 0;
+    state.history.forEach(function (h) { sips += h.sips || 0; smokes += h.smokes || 0; });
+    document.getElementById("sips").textContent = sips;
+    document.getElementById("smokes").textContent = smokes;
+    var called = Object.keys(state.calls).length;
+    document.getElementById("called").textContent = called + "/" + RACES.length;
   }
 
   function renderLog() {
     var ol = document.getElementById("log");
     ol.innerHTML = "";
-    state.history.slice().reverse().forEach(function (h) {
-      var li = document.createElement("li");
-      li.textContent = h.text;
-      ol.appendChild(li);
-    });
     if (!state.history.length) {
-      var li = document.createElement("li");
-      li.textContent = "Nothing yet. Call a race to start.";
-      ol.appendChild(li);
+      var li0 = document.createElement("li"); li0.textContent = "Nothing yet. Call a race to start.";
+      ol.appendChild(li0); return;
     }
+    state.history.slice().reverse().forEach(function (h) {
+      var li = document.createElement("li"); li.textContent = h.text; ol.appendChild(li);
+    });
   }
 
-  function renderAll() { renderBoard(); renderTotals(); renderLog(); save(); }
+  function renderAll() {
+    pruneSnaps();
+    renderControl();
+    renderBoard();
+    renderTotals();
+    renderLog();
+    renderLastSnap();
+    save();
+  }
+
+  // ---------- Actions ----------
+  function saveSnapshot() {
+    var v = {};
+    var ok = true;
+    RACES.forEach(function (r) {
+      var inp = document.getElementById("in-" + r.id);
+      var n = parseFloat(inp.value);
+      if (isNaN(n) || n < 0 || n > 100) { ok = false; return; }
+      v[r.id] = Math.round(n) / 100;
+    });
+    if (!ok) { window.alert("Every race needs a number from 0 to 100."); return; }
+    state.snaps.push({ t: Date.now(), v: v });
+    state.draft = {};
+    renderOddsForm();
+    renderAll();
+  }
+
+  function fillLast() {
+    var last = state.snaps[state.snaps.length - 1];
+    RACES.forEach(function (r) {
+      var val = last && typeof last.v[r.id] === "number" ? pct(last.v[r.id]) : pct(r.pD);
+      document.getElementById("in-" + r.id).value = val;
+    });
+  }
 
   function callRace(id, winner) {
     var r = RACES.filter(function (x) { return x.id === id; })[0];
     if (!r) return;
     var prev = state.calls[id];
+    // Re-calling replaces the earlier result so drinks are never double-counted.
     if (prev) {
-      // Re-calling a race replaces its earlier result, so drinks are not double-counted.
       state.history = state.history.filter(function (h) { return h.raceId !== id; });
-      state.calls[id] = null;
       delete state.calls[id];
+      if (prev.winner === winner) { renderAll(); return; }
     }
-    if (prev && prev.winner === winner) { renderAll(); return; }
-
-    var sips = upsetSips(r, winner);
-    var smokes = 0;
-    state.calls[id] = { winner: winner, sips: sips };
-    var label = r.group === "Control" ? "Senate control" : r.group + " " + r.name;
-    if (r.group === "Control") label = r.name;
-    var text = label + " called " + (winner === "D" ? "Democratic" : "Republican") + (sips ? " · " + sips + " sip" + (sips === 1 ? "" : "s") : " · chalk");
-    state.history.push({ raceId: id, text: text, sips: sips, smokes: smokes });
+    var pD = currentPD(r);
+    var sips = upsetSips(pD, winner);
+    state.calls[id] = { winner: winner, sips: sips, pD: pD };
+    var label = r.group === "Chamber control" ? "Senate control" : r.group + " · " + r.title;
+    var winnerName = winner === "D" ? r.d : r.r;
+    var text = label + ": " + winnerName + " (" + (winner === "D" ? "D" : "R") + ")" +
+      (sips ? " · upset, " + sips + " sip" + (sips === 1 ? "" : "s") : " · chalk");
+    state.history.push({ raceId: id, text: text, sips: sips, smokes: 0 });
     renderAll();
   }
 
@@ -303,6 +473,7 @@
     var last = state.history.pop();
     if (!last) return;
     if (last.raceId) delete state.calls[last.raceId];
+    if (last.cardUndo) { /* card entries carry no call */ }
     renderAll();
   }
 
@@ -323,18 +494,25 @@
     renderAll();
   }
 
+  document.getElementById("saveSnap").addEventListener("click", saveSnapshot);
+  document.getElementById("fillLast").addEventListener("click", fillLast);
   document.getElementById("drawBtn").addEventListener("click", drawCard);
   document.getElementById("undoBtn").addEventListener("click", undo);
   document.getElementById("resetBtn").addEventListener("click", function () {
-    if (!window.confirm("Reset the whole night?")) return;
-    state = { calls: {}, history: [], cardsDrawn: 0, lastCard: -1 };
+    if (!window.confirm("Reset the whole night, including odds history?")) return;
+    state = { calls: {}, history: [], snaps: [], cardsDrawn: 0, lastCard: -1, draft: {} };
     document.getElementById("cardText").textContent = "—";
     document.getElementById("cardHit").textContent = "";
     document.getElementById("cardCount").textContent = "Draw a card when the mood needs it.";
+    renderOddsForm();
     renderAll();
   });
 
+  // Re-render sparklines every minute so the 12-hour window slides forward.
+  setInterval(function () { renderControl(); renderBoard(); }, 60 * 1000);
+
   load();
+  renderOddsForm();
   renderAll();
 })();
 </script>
