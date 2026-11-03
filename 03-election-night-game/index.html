@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Election Night Upset Tracker</title>
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --card: #ffffff;
+    --ink: #1d1d1f;
+    --muted: #6b6b70;
+    --line: #e2e0da;
+    --d: #2f5bb7;
+    --r: #c23b3b;
+    --accent: #b8860b;
+    --ok: #2e7d4f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141416; --card: #1f1f23; --ink: #ececef; --muted: #9a9aa2; --line: #303036;
+      --d: #6f95e6; --r: #e46a6a; --accent: #e0b04a; --ok: #5fbf8a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141416; --card: #1f1f23; --ink: #ececef; --muted: #9a9aa2; --line: #303036;
+    --d: #6f95e6; --r: #e46a6a; --accent: #e0b04a; --ok: #5fbf8a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; margin: 4px 0 2px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 8px; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .tally { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; text-align: center; }
+  .stat .n { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat .l { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  .btn {
+    appearance: none; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 10px; padding: 10px 14px; font: inherit; cursor: pointer;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #111; font-weight: 600; }
+  .btn.small { padding: 6px 10px; font-size: 13px; }
+  .btn.d { color: var(--d); }
+  .btn.r { color: var(--r); }
+  .btn.on-d { background: var(--d); border-color: var(--d); color: #fff; }
+  .btn.on-r { background: var(--r); border-color: var(--r); color: #fff; }
+  .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .race {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px; margin-bottom: 8px;
+  }
+  .race-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .race-name { font-weight: 600; }
+  .odds { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .bar { height: 6px; border-radius: 3px; background: var(--r); overflow: hidden; margin: 8px 0; }
+  .bar > span { display: block; height: 100%; background: var(--d); }
+  .result { font-size: 13px; margin-top: 6px; min-height: 18px; }
+  .result.upset { color: var(--accent); font-weight: 600; }
+  .result.chalk { color: var(--ok); }
+  .card-box {
+    background: var(--card); border: 1px dashed var(--accent); border-radius: 12px;
+    padding: 14px; text-align: center;
+  }
+  .card-text { font-size: 17px; margin: 8px 0 12px; min-height: 48px; }
+  .card-hit { font-size: 13px; color: var(--muted); }
+  .log { font-size: 13px; color: var(--muted); max-height: 200px; overflow: auto; padding-left: 18px; margin: 6px 0; }
+  .note {
+    font-size: 12px; color: var(--muted); border-top: 1px solid var(--line);
+    margin-top: 22px; padding-top: 12px;
+  }
+  .toolbar { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  a { color: var(--d); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Election Night Upset Tracker</h1>
+  <p class="sub">Every race is priced by Polymarket. Favorites winning is chalk (no drinks). Underdogs winning costs the table sips, scaled by how unlikely the result was.</p>
+
+  <div class="tally">
+    <div class="stat"><div class="n" id="sips">0</div><div class="l">Sips owed</div></div>
+    <div class="stat"><div class="n" id="smokes">0</div><div class="l">Smoke breaks owed</div></div>
+  </div>
+
+  <h2>Upset math</h2>
+  <div class="card-box" style="text-align:left">
+    <div>Sips = round((1 − favorite's probability) × 20), minimum 1 when the underdog wins.</div>
+    <div class="card-hit">Example: a 71% favorite loses → round(0.29 × 20) = 6 sips. A 95% favorite loses → 1 sip. A 52% favorite loses → 10 sips.</div>
+  </div>
+
+  <h2>Race board</h2>
+  <div id="board"></div>
+
+  <h2>Event card</h2>
+  <div class="card-box">
+    <div class="card-hit" id="cardCount">Draw a card when the mood needs it.</div>
+    <div class="card-text" id="cardText">—</div>
+    <div class="card-hit" id="cardHit"></div>
+    <div style="margin-top:10px"><button class="btn primary" id="drawBtn">Draw card</button></div>
+  </div>
+
+  <h2>Log</h2>
+  <ol class="log" id="log"></ol>
+
+  <div class="toolbar">
+    <button class="btn small" id="undoBtn">Undo last call</button>
+    <button class="btn small" id="resetBtn">Reset night</button>
+  </div>
+
+  <div class="note">
+    <p><strong>Odds source:</strong> Polymarket probabilities are snapshots taken from third-party pages on election day, not live feeds. Senate and governor numbers came from different snapshots and do not all agree. Pennsylvania governor has no price in the data, so it is left out. Update the <code>RACES</code> array in this file to refresh them.</p>
+    <p><strong>Sources:</strong> <a href="https://polymarket.us/midterms/key-races">Polymarket US, key races</a> · <a href="https://polymarket.us/event/usse-midterms-2026-11-03">Polymarket US, Senate winner</a> · <a href="https://polymarket.us/event/usgub-oh-2026-11-03">Polymarket US, Ohio governor</a> · <a href="https://www.realclearpolling.com/maps/governor/2026/polymarket">RealClearPolling, governor map</a> · <a href="https://cedarnews.net/newstasks/1118424/gina-hinojosas-texas-governor-election-odds-rise-to-34-on-polymarket/">Cedar News, Texas governor</a></p>
+    <p><strong>Drink responsibly.</strong> Every sip can be water, soda, or nothing. Nobody should be drinking to keep up, and nobody should drive home from this. Smoke breaks are optional and can be skipped for any reason, including a non-smoker's "I'll take a lap instead."</p>
+  </div>
+</main>
+
+<script>
+(function () {
+  // Democratic win probability per race, from Polymarket snapshots (election day, 2026-11-03).
+  // Edit these to refresh. pD = probability Democrat wins.
+  var RACES = [
+    { id: "ctl",  group: "Control",  name: "Senate control (majority)", pD: 0.77 },
+    { id: "s-tx", group: "Senate",   name: "Texas",                     pD: 0.74 },
+    { id: "s-ia", group: "Senate",   name: "Iowa",                      pD: 0.52 },
+    { id: "s-oh", group: "Senate",   name: "Ohio",                      pD: 0.71 },
+    { id: "s-mi", group: "Senate",   name: "Michigan",                  pD: 0.79 },
+    { id: "s-me", group: "Senate",   name: "Maine",                     pD: 0.73 },
+    { id: "s-ak", group: "Senate",   name: "Alaska",                    pD: 0.71 },
+    { id: "s-ga", group: "Senate",   name: "Georgia",                   pD: 0.97 },
+    { id: "s-nc", group: "Senate",   name: "North Carolina",            pD: 0.98 },
+    { id: "s-nh", group: "Senate",   name: "New Hampshire",             pD: 0.95 },
+    { id: "s-ks", group: "Senate",   name: "Kansas",                    pD: 0.63 },
+    { id: "g-ga", group: "Governor", name: "Georgia",                   pD: 0.71 },
+    { id: "g-az", group: "Governor", name: "Arizona",                   pD: 0.93 },
+    { id: "g-wi", group: "Governor", name: "Wisconsin",                 pD: 0.86 },
+    { id: "g-mi", group: "Governor", name: "Michigan",                  pD: 0.95 },
+    { id: "g-nv", group: "Governor", name: "Nevada",                    pD: 0.75 },
+    { id: "g-tx", group: "Governor", name: "Texas",                     pD: 0.34 }
+  ];
+
+  var CARDS = [
+    { t: "Anchor says “too early to call.” Everyone takes a smoke break.", sips: 0, smokes: 1 },
+    { t: "A county nobody has heard of reports first. Sip.", sips: 1, smokes: 0 },
+    { t: "Someone says “the polls were wrong.” Sip for each person who said it before 10 p.m.", sips: 1, smokes: 0 },
+    { t: "The map is solid red for 30 seconds. Sip.", sips: 2, smokes: 0 },
+    { t: "A pundit says “the real story is”. Sip.", sips: 1, smokes: 0 },
+    { t: "Someone checks Polymarket on their phone. They drink.", sips: 2, smokes: 0 },
+    { t: "A race is called with under 10% reporting. Smoke break.", sips: 0, smokes: 1 },
+    { t: "A candidate concedes on stage. Three sips for the speech.", sips: 3, smokes: 0 },
+    { t: "Someone says “recount.” Sip and smoke break.", sips: 1, smokes: 1 },
+    { t: "Anyone says “turnout.” Sip.", sips: 1, smokes: 0 },
+    { t: "Last person to look at their phone drinks.", sips: 1, smokes: 0 },
+    { t: "Everyone who has voted today sips. Everyone who hasn't takes a smoke break and goes to vote tomorrow.", sips: 1, smokes: 1 }
+  ];
+
+  var STORE_KEY = "election-night-upset-tracker-v1";
+  var state = { calls: {}, history: [], cardsDrawn: 0, lastCard: -1 };
+
+  function load() {
+    try {
+      var raw = window.localStorage.getItem(STORE_KEY);
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s && typeof s === "object") state = Object.assign(state, s);
+      }
+    } catch (e) { /* storage blocked or corrupt: start fresh */ }
+  }
+  function save() {
+    try { window.localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function favoriteOf(r) { return r.pD >= 0.5 ? "D" : "R"; }
+  function pFav(r) { return Math.max(r.pD, 1 - r.pD); }
+  function upsetSips(r, winner) {
+    if (winner === favoriteOf(r)) return 0;
+    return Math.max(1, Math.round((1 - pFav(r)) * 20));
+  }
+  function pct(x) { return Math.round(x * 100) + "%"; }
+
+  function totals() {
+    var sips = 0, smokes = 0;
+    state.history.forEach(function (h) { sips += h.sips || 0; smokes += h.smokes || 0; });
+    return { sips: sips, smokes: smokes };
+  }
+
+  function renderBoard() {
+    var board = document.getElementById("board");
+    board.innerHTML = "";
+    var lastGroup = null;
+    RACES.forEach(function (r) {
+      if (r.group !== lastGroup) {
+        var h = document.createElement("div");
+        h.className = "sub";
+        h.style.marginTop = "12px";
+        h.textContent = r.group === "Control" ? "Chamber control" : r.group + " races";
+        board.appendChild(h);
+        lastGroup = r.group;
+      }
+      var call = state.calls[r.id];
+      var card = document.createElement("div");
+      card.className = "race";
+
+      var head = document.createElement("div");
+      head.className = "race-head";
+      var name = document.createElement("div");
+      name.className = "race-name";
+      name.textContent = r.name;
+      var odds = document.createElement("div");
+      odds.className = "odds";
+      odds.textContent = "Polymarket: D " + pct(r.pD) + " · R " + pct(1 - r.pD);
+      head.appendChild(name); head.appendChild(odds);
+
+      var bar = document.createElement("div");
+      bar.className = "bar";
+      var fill = document.createElement("span");
+      fill.style.width = (r.pD * 100) + "%";
+      bar.appendChild(fill);
+
+      var actions = document.createElement("div");
+      actions.className = "row-actions";
+      ["D", "R"].forEach(function (p) {
+        var b = document.createElement("button");
+        var isOn = call && call.winner === p;
+        b.className = "btn small " + (p === "D" ? "d" : "r") + (isOn ? (p === "D" ? " on-d" : " on-r") : "");
+        b.textContent = (p === "D" ? "Called D" : "Called R") + (isOn ? " ✓" : "");
+        b.addEventListener("click", function () { callRace(r.id, p); });
+        actions.appendChild(b);
+      });
+
+      var result = document.createElement("div");
+      result.className = "result";
+      if (call) {
+        if (call.sips > 0) {
+          result.className += " upset";
+          var label = pFav(r) >= 0.9 ? "MEGA UPSET: " : "Upset: ";
+          result.textContent = label + call.sips + " sip" + (call.sips === 1 ? "" : "s") + " (" + (call.winner === "D" ? "R" : "D") + " favorite lost)";
+        } else {
+          result.className += " chalk";
+          result.textContent = "Chalk. Favorite won, no drinks.";
+        }
+      }
+
+      card.appendChild(head);
+      card.appendChild(bar);
+      card.appendChild(actions);
+      card.appendChild(result);
+      board.appendChild(card);
+    });
+  }
+
+  function renderTotals() {
+    var t = totals();
+    document.getElementById("sips").textContent = t.sips;
+    document.getElementById("smokes").textContent = t.smokes;
+  }
+
+  function renderLog() {
+    var ol = document.getElementById("log");
+    ol.innerHTML = "";
+    state.history.slice().reverse().forEach(function (h) {
+      var li = document.createElement("li");
+      li.textContent = h.text;
+      ol.appendChild(li);
+    });
+    if (!state.history.length) {
+      var li = document.createElement("li");
+      li.textContent = "Nothing yet. Call a race to start.";
+      ol.appendChild(li);
+    }
+  }
+
+  function renderAll() { renderBoard(); renderTotals(); renderLog(); save(); }
+
+  function callRace(id, winner) {
+    var r = RACES.filter(function (x) { return x.id === id; })[0];
+    if (!r) return;
+    var prev = state.calls[id];
+    if (prev) {
+      // Re-calling a race replaces its earlier result, so drinks are not double-counted.
+      state.history = state.history.filter(function (h) { return h.raceId !== id; });
+      state.calls[id] = null;
+      delete state.calls[id];
+    }
+    if (prev && prev.winner === winner) { renderAll(); return; }
+
+    var sips = upsetSips(r, winner);
+    var smokes = 0;
+    state.calls[id] = { winner: winner, sips: sips };
+    var label = r.group === "Control" ? "Senate control" : r.group + " " + r.name;
+    if (r.group === "Control") label = r.name;
+    var text = label + " called " + (winner === "D" ? "Democratic" : "Republican") + (sips ? " · " + sips + " sip" + (sips === 1 ? "" : "s") : " · chalk");
+    state.history.push({ raceId: id, text: text, sips: sips, smokes: smokes });
+    renderAll();
+  }
+
+  function undo() {
+    var last = state.history.pop();
+    if (!last) return;
+    if (last.raceId) delete state.calls[last.raceId];
+    renderAll();
+  }
+
+  function drawCard() {
+    var idx;
+    do { idx = Math.floor(Math.random() * CARDS.length); }
+    while (CARDS.length > 1 && idx === state.lastCard);
+    state.lastCard = idx;
+    state.cardsDrawn += 1;
+    var c = CARDS[idx];
+    document.getElementById("cardText").textContent = c.t;
+    var hit = [];
+    if (c.sips) hit.push(c.sips + " sip" + (c.sips === 1 ? "" : "s"));
+    if (c.smokes) hit.push(c.smokes + " smoke break" + (c.smokes === 1 ? "" : "s"));
+    document.getElementById("cardHit").textContent = hit.join(" + ") || "Nothing. Lucky table.";
+    document.getElementById("cardCount").textContent = "Card " + state.cardsDrawn;
+    state.history.push({ raceId: null, text: "Card: " + c.t, sips: c.sips, smokes: c.smokes });
+    renderAll();
+  }
+
+  document.getElementById("drawBtn").addEventListener("click", drawCard);
+  document.getElementById("undoBtn").addEventListener("click", undo);
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!window.confirm("Reset the whole night?")) return;
+    state = { calls: {}, history: [], cardsDrawn: 0, lastCard: -1 };
+    document.getElementById("cardText").textContent = "—";
+    document.getElementById("cardHit").textContent = "";
+    document.getElementById("cardCount").textContent = "Draw a card when the mood needs it.";
+    renderAll();
+  });
+
+  load();
+  renderAll();
+})();
+</script>
+</body>
+</html>
